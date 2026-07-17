@@ -1,0 +1,16 @@
+;; data/culture-tx.edn — DataScript tx-data derived from src/culture/facts.cljc
+;; `culture.facts/catalog` (ADR-2607171400 addendum 2, Wave 1 country-level).
+;; Same shape across every cloud-itonami-iso3166-* sibling. Do not hand-edit;
+;; regenerate from the catalog.
+
+[
+#:culture{:id "svk.dish.bryndzove-halusky", :name "Bryndzové halušky", :country "SVK", :kind :dish, :summary "One of the national dishes of Slovakia, consisting of boiled potato dough dumplings topped with soft sheep cheese (bryndza) and typically bacon bits.", :url "https://en.wikipedia.org/wiki/Bryndzov%C3%A9_halu%C5%A1ky", :url-provenance :wikipedia-en, :retrieved-at "2026-07-17"}
+#:culture{:id "svk.dish.kapustnica", :name "Kapustnica", :country "SVK", :kind :dish, :summary "Slovak soup made from sauerkraut and sausage, traditionally eaten around Christmas.", :url "https://en.wikipedia.org/wiki/Slovak_cuisine", :url-provenance :wikipedia-en, :retrieved-at "2026-07-17"}
+#:culture{:id "svk.dish.strapacky", :name "Strapačky", :country "SVK", :kind :dish, :summary "Dish popular in Slovakia (and Hungary) combining potato dumplings (halušky) with stewed sauerkraut instead of cheese.", :url "https://en.wikipedia.org/wiki/Strapa%C4%8Dky", :url-provenance :wikipedia-en, :retrieved-at "2026-07-17"}
+#:culture{:id "svk.product.bryndza", :name "Bryndza", :country "SVK", :kind :product, :summary "Sheep milk cheese from Central and Eastern Europe; the Slovak variety 'Slovenská bryndza' holds Protected Geographical Indication (PGI) status.", :url "https://en.wikipedia.org/wiki/Bryndza", :url-provenance :wikipedia-en, :retrieved-at "2026-07-17"}
+#:culture{:id "svk.beverage.slivovica", :name "Slivovica", :country "SVK", :kind :beverage, :summary "Traditional plum brandy produced across Central and Southeastern Europe; known in Slovakia as slivovica, with strong cultural presence in local traditions.", :url "https://en.wikipedia.org/wiki/Slivovitz", :url-provenance :wikipedia-en, :retrieved-at "2026-07-17"}
+#:culture{:id "svk.craft.fujara", :name "Fujara", :country "SVK", :kind :craft, :summary "Large Slovak folk wind instrument; 'The Fujara and its Music' was inscribed on UNESCO's Representative List of the Intangible Cultural Heritage of Humanity in 2008.", :url "https://en.wikipedia.org/wiki/Fujara", :url-provenance :wikipedia-en, :retrieved-at "2026-07-17"}
+#:culture{:id "svk.festival.fasiangy", :name "Fašiangy", :country "SVK", :kind :festival, :summary "Slovak name for the Slavic pre-Lenten carnival tradition, observed before Great Lent.", :url "https://en.wikipedia.org/wiki/Slavic_Carnival", :url-provenance :wikipedia-en, :retrieved-at "2026-07-17"}
+#:culture{:id "svk.heritage.vlkolinec", :name "Vlkolínec", :country "SVK", :kind :heritage, :summary "Traditional Slovak mountain settlement, listed as a UNESCO World Heritage Site since 1993.", :url "https://en.wikipedia.org/wiki/Vlkol%C3%ADnec", :url-provenance :wikipedia-en, :retrieved-at "2026-07-17"}
+#:culture{:id "svk.heritage.banska-stiavnica", :name "Banská Štiavnica", :country "SVK", :kind :heritage, :summary "Historic Slovak mining town and its surroundings, proclaimed a UNESCO World Heritage Site on 11 December 1993.", :url "https://en.wikipedia.org/wiki/Bansk%C3%A1_%C5%A0tiavnica", :url-provenance :wikipedia-en, :retrieved-at "2026-07-17"}
+]
