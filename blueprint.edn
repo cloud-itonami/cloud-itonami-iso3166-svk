@@ -7,4 +7,50 @@
  :itonami.blueprint/governor :market-entry-compliance-governor
  :itonami.blueprint/robotics false
  :itonami.blueprint/required-technologies [:identity :forms :dmn :bpmn :audit-ledger]
- :itonami.blueprint/status :public-oss}
+ :itonami.blueprint/status :public-oss
+ :itonami.blueprint/maturity :implemented
+ :itonami.blueprint/implemented-slice
+ "src/marketentry/* (langgraph-clj StateGraph actor, compiled via
+ `operation/build` -> `g/state-graph` -> `g/compile-graph` with
+ `interrupt-before #{:request-approval}`): facts.cljc (official
+ spec-basis catalog, curl/WebFetch-verified against uvo.gov.sk,
+ isepvo.sk, orsr.sk, economy.gov.sk, financnasprava.sk, slov-lex.sk --
+ Obchodný register incorporation, Zoznam hospodárskych subjektov / EPVO
+ (IS EVO + Elektronické trhovisko) registration, IČ DPH/DIČ, plus two
+ flagship field groups: `:fdi-screening-*` (Zákon č. 497/2022 Z. z.,
+ Ministerstvo hospodárstva SR) and `:platform-oversight-authority`/
+ `:platform-operator-authority`/`:platform-operator-note`/
+ `:platform-operator-provenance` keeping ÚVO's legal/regulatory-
+ oversight role and Úrad vlády Slovenskej republiky's separate IS
+ EVO/EPVO-operator role, since 31 March 2022, as two DISTINCT catalog
+ fields -- mirroring `cloud-itonami-iso3166-lva`'s IUB/VDAA split --
+ plus `:corporate-number-*` (IČO, Štatistický úrad SR) and `:dic-*`
+ (Finančná správa), kept as two DISTINCT authorities), governor.cljc
+ (Market-Entry Compliance Governor -- spec-basis HARD check,
+ evidence-incomplete HARD check, `:fdi-screening-missing` HARD check
+ (flagship #1, Zákon č. 497/2022 Z. z.), `:platform-operator-fused`
+ HARD check independently verifying a `:jurisdiction/assess` proposal
+ never collapses ÚVO and Úrad vlády SR into one fused authority
+ (flagship #2), engagement-fee-mismatch independent recompute,
+ `:ico-unverified` HARD check (Štatistický úrad SR, NOT Finančná
+ správa), `:dic-unverified` HARD check (Finančná správa),
+ confidence-floor/actuation gate, plus double-draft/double-submit
+ guards), store.cljc (MemStore + DatomicStore via
+ `io.github.kotoba-lang/langchain-store`
+ (`ls/enc`/`ls/dec*`/`ls/read-stream`/`ls/append-blob!`) instead of a
+ hand-rolled EDN-blob codec), registry.cljc (pure-function
+ filing-draft/filing-submit record construction + fee recompute),
+ marketentryllm.cljc (mock MarketEntry Advisor, with injectable
+ `:no-spec?` and `:fuse-platform-operator?` failure modes),
+ operation.cljc (intake -> advise -> govern -> decide ->
+ [request-approval ->] commit/hold StateGraph, `store/append-ledger!`
+ called from both the `:commit` and `:hold` nodes), phase.cljc (0->3
+ rollout, `:filing/draft`/`:filing/submit` permanently excluded from
+ every phase's `:auto` set). Tests cover the governor contract
+ (including the ÚVO/Úrad vlády SR distinction, both the clean path and
+ the fused-claim HARD hold; IČO/DIČ missing HARD holds; interrupt-
+ before pause; ledger append-only-ness), facts, phase, registry, store
+ parity (MemStore vs DatomicStore) across backends. Alongside
+ marketentry, this repo also carries a separate `statute` general-law
+ catalog (ADR-2607141700) and a `culture` regional-culture catalog,
+ both left untouched by this pass."}

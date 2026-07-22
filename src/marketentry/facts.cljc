@@ -92,6 +92,49 @@
     server-side). Do not treat a DIČ article-level citation as verified
     until that specific gap is closed.
 
+  FOLLOW-UP CORRECTION PASS (added after the wave above landed): the
+  wave above's :required-evidence already lists an EPVO/IS EVO
+  registration item and correctly disclaims ÚVO as its operator in
+  :national-spec's own text, but it did not yet turn that split into
+  its own governor-checked field pair, and did not yet carry an IČO
+  citation at all. This pass adds three field groups without touching
+  anything already verified above:
+
+  - `:platform-oversight-authority`/`:platform-operator-authority`/
+    `:platform-operator-note`/`:platform-operator-provenance` --
+    SECOND flagship field group, the SAME regulator/operator-split
+    pattern `cloud-itonami-iso3166-lva` uses for IUB/VDAA (EIS),
+    reapplied here: ÚVO (Úrad pre verejné obstarávanie) is the legal/
+    regulatory-oversight authority; IS EVO/EPVO (isepvo.sk) is
+    operated by a SEPARATE authority -- as of 31 March 2022 its
+    management passed FROM ÚVO TO Úrad vlády Slovenskej republiky
+    (Office of the Government of the Slovak Republic), operationally
+    via the Úrad podpredsedu vlády SR pre Plán obnovy a znalostnú
+    ekonomiku (Office of the Deputy PM for the Recovery Plan and
+    Knowledge Economy) -- consistent with, and more granular than, the
+    wave above's own :national-spec text. ÚVO's own site explicitly
+    disclaims operating it; the near-universal naive-source mistake is
+    'ÚVO operates IS EVO/EPVO'. `marketentry.governor`'s
+    `platform-operator-fusion-violations` HARD-holds any
+    `:jurisdiction/assess` proposal that collapses these into one
+    fused fact. A third system, EKS (eks.sk), is a separate
+    below-threshold e-marketplace, structurally distinct from EPVO --
+    this catalog does NOT assert a specific current operator for EKS
+    (not independently confirmed; existence noted here only).
+  - `:corporate-number-owner-authority`/`:corporate-number-legal-basis`/
+    `:corporate-number-provenance` -- IČO (8-digit business/
+    organisation identification number), issued by Štatistický úrad
+    Slovenskej republiky (Statistical Office of the Slovak Republic) --
+    a body DISTINCT from Finančná správa (which issues DIČ/IČ DPH, see
+    below). Do not attribute IČO issuance to Finančná správa.
+  - `:dic-owner-authority`/`:dic-legal-basis`/`:dic-provenance` -- DIČ
+    (tax identification number) assignment under Zákon č. 563/2009
+    Z. z. o správe daní (daňový poriadok), administered by Finančná
+    správa via the local daňový úrad -- the SAME disclosed-gap caveat
+    above (no article-level citation pulled) still applies to this
+    field group; only the act title and administering agency are
+    treated as verified.
+
   An entry not in this table has NO spec-basis, full stop; extend
   `catalog`, do not invent an id/url/date.")
 
@@ -114,7 +157,20 @@
           ;; 61/2023 Z. z.
           :fdi-screening-owner-authority "Ministerstvo hospodárstva Slovenskej republiky (MHSR, Ministry of Economy)"
           :fdi-screening-legal-basis "Zákon č. 497/2022 Z. z. o preverovaní zahraničných investícií a o zmene a doplnení niektorých zákonov (účinnosť 1. 3. 2023), implementujúci nariadenie Európskeho parlamentu a Rady (EÚ) 2019/452; kritické zahraničné investície ustanovuje nariadenie vlády SR č. 61/2023 Z. z., formulár žiadosti vyhláška MH SR č. 64/2023 Z. z."
-          :fdi-screening-provenance "https://www.economy.gov.sk/podnikatelske-prostredie/preverovanie-zahranicnych-investicii/zakladne-informacie"}
+          :fdi-screening-provenance "https://www.economy.gov.sk/podnikatelske-prostredie/preverovanie-zahranicnych-investicii/zakladne-informacie"
+          ;; SECOND flagship field group -- see namespace docstring
+          ;; "FOLLOW-UP CORRECTION PASS". Mirrors cloud-itonami-iso3166-lva's
+          ;; IUB/VDAA (EIS) split.
+          :platform-oversight-authority "Úrad pre verejné obstarávanie (ÚVO, Public Procurement Office)"
+          :platform-operator-authority "Úrad vlády Slovenskej republiky (Office of the Government of the Slovak Republic) -- since 31 March 2022, operationally via the Úrad podpredsedu vlády SR pre Plán obnovy a znalostnú ekonomiku (Office of the Deputy PM for the Recovery Plan and Knowledge Economy)"
+          :platform-operator-note "IS EVO / EPVO (Elektronická platforma verejného obstarávania, isepvo.sk -- above-threshold + most below-threshold contracts, previously at evo.gov.sk) is NOT operated by ÚVO. As of 31 March 2022, its management transferred FROM ÚVO TO Úrad vlády Slovenskej republiky; ÚVO's own site explicitly states it no longer operates this system, retaining only the supervisory/appeals (dohľad, námietky) authority and its own separate eForms/IS ÚVO notice-publication system. A third system, EKS (eks.sk), is a separate below-threshold e-marketplace structurally distinct from EPVO -- no specific current operator asserted for EKS here (not independently confirmed). Do not fuse ÚVO and the IS EVO/EPVO operator into one fact."
+          :platform-operator-provenance "https://www.uvo.gov.sk/"
+          :corporate-number-owner-authority "Štatistický úrad Slovenskej republiky (Statistical Office of the Slovak Republic)"
+          :corporate-number-legal-basis "IČO (8-digit business/organisation identification number) is issued by the Statistical Office -- a body DISTINCT from Finančná správa (which issues DIČ and IČ DPH, see :dic-legal-basis). Do not attribute IČO issuance to Finančná správa."
+          :corporate-number-provenance "https://www.statistics.sk/"
+          :dic-owner-authority "Finančná správa Slovenskej republiky (Financial Administration), via the local daňový úrad (tax office)"
+          :dic-legal-basis "DIČ (tax identification number) assignment under Zákon č. 563/2009 Z. z. o správe daní (daňový poriadok) -- general tax registration, administered by Finančná správa; distinct from IČ DPH (VAT registration under Zákon č. 222/2004 Z. z., mandatory once turnover exceeds 50 000 EUR/62 500 EUR) and from IČO (Statistical Office, NOT Finančná správa). Article-level citation not independently pulled this session -- see namespace docstring disclosed gap."
+          :dic-provenance "https://www.financnasprava.sk/"}
    "USA" {:name "United States" :owner-authority "GSA/SAM.gov" :legal-basis "FAR"
           :national-spec "SAM.gov" :provenance "https://sam.gov/"
           :required-evidence ["EIN record" "SAM.gov registration record" "State business registration record" "SAM UEI verification record"]}
@@ -150,3 +206,43 @@
   (when-let [sb (spec-basis iso3)]
     (when (:fdi-screening-owner-authority sb)
       (select-keys sb [:fdi-screening-owner-authority :fdi-screening-legal-basis :fdi-screening-provenance]))))
+
+(defn platform-operator-spec-basis
+  "The jurisdiction's e-procurement PLATFORM-OPERATOR citation, or
+  nil -- the SECOND flagship field group for this vertical (see
+  namespace docstring), mirroring `cloud-itonami-iso3166-lva`'s
+  IUB/VDAA split. Keeps the legal/regulatory-oversight authority
+  (`:platform-oversight-authority`) and the platform's separate
+  technical operator (`:platform-operator-authority`) as two DISTINCT
+  values so a consumer (governor, advisor, UI) is structurally
+  prevented from collapsing them into one fused fact. For SVK: ÚVO is
+  the oversight authority, Úrad vlády Slovenskej republiky is IS
+  EVO/EPVO's operator since 31 March 2022."
+  [iso3]
+  (when-let [sb (spec-basis iso3)]
+    (when (:platform-operator-authority sb)
+      (select-keys sb [:platform-oversight-authority
+                       :platform-operator-authority
+                       :platform-operator-note
+                       :platform-operator-provenance]))))
+
+(defn corporate-number-spec-basis
+  "The jurisdiction's corporate-number / statistical-ID regime, or
+  nil. For SVK this is IČO, issued by Štatistický úrad SR (Statistical
+  Office) -- a DIFFERENT authority from Finančná správa (see
+  `dic-spec-basis`)."
+  [iso3]
+  (when-let [sb (spec-basis iso3)]
+    (when (:corporate-number-owner-authority sb)
+      (select-keys sb [:corporate-number-owner-authority
+                       :corporate-number-legal-basis
+                       :corporate-number-provenance]))))
+
+(defn dic-spec-basis
+  "The jurisdiction's tax-ID (DIČ) regime, or nil. For SVK this is
+  Finančná správa's DIČ assignment under Zákon č. 563/2009 Z. z. --
+  DISTINCT from IČO (Statistical Office, see `corporate-number-spec-basis`)."
+  [iso3]
+  (when-let [sb (spec-basis iso3)]
+    (when (:dic-owner-authority sb)
+      (select-keys sb [:dic-owner-authority :dic-legal-basis :dic-provenance]))))

@@ -30,31 +30,57 @@
    :stake      nil
    :confidence 0.97})
 
+(defn- platform-operator-flags
+  "Builds the proposal's platform-operator claim from the catalog. When
+  `fuse-platform-operator?` is true, injects the failure mode the
+  governor's `platform-operator-fusion-violations` check must catch:
+  the naive 'ÚVO operates IS EVO/EPVO' mistake that collapses the
+  legal/regulatory-oversight authority and the platform's separate
+  technical operator into one fused value."
+  [pob fuse-platform-operator?]
+  (when pob
+    (if fuse-platform-operator?
+      {:platform-legal-authority (:platform-oversight-authority pob)
+       :platform-technical-operator (:platform-oversight-authority pob)}
+      {:platform-legal-authority (:platform-oversight-authority pob)
+       :platform-technical-operator (:platform-operator-authority pob)})))
+
 (defn- assess-jurisdiction
   "Per-jurisdiction market-entry evidence checklist draft. `:no-spec?`
   injects the failure mode we must defend against: proposing a
-  checklist for a jurisdiction with NO official spec-basis."
-  [db {:keys [subject no-spec?]}]
+  checklist for a jurisdiction with NO official spec-basis.
+  `:fuse-platform-operator?` injects the OTHER failure mode this
+  vertical must defend against: fusing ÚVO's legal-oversight authority
+  and IS EVO/EPVO's separate operator (Úrad vlády Slovenskej
+  republiky) into one claim."
+  [db {:keys [subject no-spec? fuse-platform-operator?]}]
   (let [e (store/engagement db subject)
         iso3 (if no-spec? "ATL" (:jurisdiction e))
-        sb (facts/spec-basis iso3)]
+        sb (facts/spec-basis iso3)
+        pob (facts/platform-operator-spec-basis iso3)
+        platform-flags (platform-operator-flags pob fuse-platform-operator?)]
     (if (nil? sb)
       {:summary    (str iso3 " の公式spec-basisが見つかりません")
        :rationale  "marketentry.facts に未登録の法域。要件を推測で作らない。"
        :cites      []
        :effect     :assessment/set
-       :value      {:jurisdiction iso3 :checklist [] :spec-basis nil}
+       :value      (merge {:jurisdiction iso3 :checklist [] :spec-basis nil} platform-flags)
        :stake      nil
        :confidence 0.9}
       {:summary    (str iso3 " (" (:owner-authority sb) ") 向け必要書類 "
                         (count (:required-evidence sb)) " 件を提案")
-       :rationale  (str "公式ソース: " (:provenance sb) " / 法的根拠: " (:legal-basis sb))
-       :cites      [(:legal-basis sb) (:provenance sb)]
+       :rationale  (str "公式ソース: " (:provenance sb) " / 法的根拠: " (:legal-basis sb)
+                        (when pob
+                          (str " / EPVO・IS EVOプラットフォーム運営: " (:platform-operator-authority pob)
+                               " (法的監督機関: " (:platform-oversight-authority pob) " とは別主体)")))
+       :cites      (cond-> [(:legal-basis sb) (:provenance sb)]
+                     pob (conj (:platform-operator-provenance pob)))
        :effect     :assessment/set
-       :value      {:jurisdiction iso3
-                    :checklist (:required-evidence sb)
-                    :spec-basis (:provenance sb)
-                    :legal-basis (:legal-basis sb)}
+       :value      (merge {:jurisdiction iso3
+                           :checklist (:required-evidence sb)
+                           :spec-basis (:provenance sb)
+                           :legal-basis (:legal-basis sb)}
+                          platform-flags)
        :stake      nil
        :confidence 0.9})))
 
@@ -85,6 +111,8 @@
      :rationale  (if e
                    (str "requires-fdi-screening?=" (:requires-fdi-screening? e)
                         " fdi-screening-cleared?=" (:fdi-screening-cleared? e)
+                        " ico-verified?=" (:ico-verified? e)
+                        " dic-verified?=" (:dic-verified? e)
                         " claimed-fee=" (:claimed-fee e))
                    "engagementが見つかりません")
      :cites      (if e [subject] [])
@@ -93,7 +121,11 @@
      :stake      :actuation/submit-filing
      :confidence (if (and e
                           (or (not (:requires-fdi-screening? e))
-                              (:fdi-screening-cleared? e)))
+                              (:fdi-screening-cleared? e))
+                          (or (not (:requires-ico? e))
+                              (:ico-verified? e))
+                          (or (not (:requires-dic? e))
+                              (:dic-verified? e)))
                    0.9 0.3)}))
 
 (defprotocol Advisor

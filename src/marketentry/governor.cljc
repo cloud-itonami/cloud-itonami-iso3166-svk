@@ -35,19 +35,28 @@
   vlády SR č. 61/2023 Z. z.) -- a fundamentally different real-world
   fact from an establishment-presence check or a tax-ID-verification
   check: it is an INBOUND-INVESTMENT security/public-order screening
-  gate, not a market-access-documentation gate. This governor
-  therefore has ONE flagship check (`fdi-screening-missing`), the same
-  shape as Serbia's single-flagship precedent, deliberately: Slovakia's
-  own required-evidence checklist (Zoznam hospodárskych subjektov / IČ
-  DPH / DIČ) is ALREADY covered by the generic `evidence-incomplete`
-  check every sibling actor in this fleet uses, so duplicating a
-  second country-specific HARD check on top of that (the way Poland's
-  NIP check sits alongside its EU-establishment check) would fabricate
-  a distinction the FDI-screening research does not independently
-  support. A smaller honest check set beats a padded one copied from a
-  sibling.
+  gate, not a market-access-documentation gate.
 
-  Six checks, in priority order, ALL HARD violations: a human approver
+  FOLLOW-UP CORRECTION PASS: a second, genuinely distinct structural
+  fact was identified after the wave above landed -- Slovakia's
+  e-procurement platform is itself split across two authorities the
+  same way Latvia's EIS is (`cloud-itonami-iso3166-lva`'s IUB/VDAA
+  pattern, reapplied here): ÚVO is the legal/regulatory-oversight
+  authority, but IS EVO/EPVO (isepvo.sk) has been operated by the
+  SEPARATE Úrad vlády Slovenskej republiky since 31 March 2022 -- ÚVO's
+  own site explicitly disclaims operating it. This is not a copy for
+  symmetry's sake: it is the SAME class of naive-source fusion mistake
+  ('ÚVO operates IS EVO/EPVO') the LVA precedent exists to catch, now
+  independently confirmed for Slovakia too, so this governor carries a
+  SECOND flagship check (`platform-operator-fusion-violations`)
+  alongside the FDI-screening one. Two field-verified HARD checks were
+  also added for the required-evidence items this actor's
+  `evidence-incomplete` check already names but did not, until now,
+  independently re-verify per engagement: IČO (issued by Štatistický
+  úrad SR, the Statistical Office -- NOT Finančná správa) and DIČ
+  (issued by Finančná správa).
+
+  Eight checks, in priority order, ALL HARD violations: a human approver
   CANNOT override them. The confidence/actuation gate is SOFT: it asks
   a human to look (low confidence / actuation), and the human may
   approve -- but see `marketentry.phase`: for `:stake
@@ -69,17 +78,28 @@
                                        `:requires-fdi-screening? true`,
                                        INDEPENDENTLY verify
                                        `:fdi-screening-cleared?` is
-                                       true. FLAGSHIP genuinely new
-                                       check for the iso3166 family
-                                       (grep-verified absent as a
-                                       governor check function name
-                                       fleet-wide at build time).
-                                       Grounded in Zákon č. 497/2022
-                                       Z. z. o preverovaní zahraničných
+                                       true. FLAGSHIP #1. Grounded in
+                                       Zákon č. 497/2022 Z. z. o
+                                       preverovaní zahraničných
                                        investícií (Ministerstvo
                                        hospodárstva Slovenskej
                                        republiky).
-    4. Engagement fee mismatch     -- for `:filing/submit`,
+    4. Platform-operator fusion    -- for `:jurisdiction/assess`, when
+                                       the jurisdiction has a distinct
+                                       platform-operator spec-basis on
+                                       file, INDEPENDENTLY verify the
+                                       proposal keeps ÚVO (legal/
+                                       regulatory-oversight authority)
+                                       and Úrad vlády Slovenskej
+                                       republiky (IS EVO/EPVO's
+                                       separate operator since 31 March
+                                       2022) DISTINCT -- never
+                                       collapses them into one fused
+                                       'ÚVO operates IS EVO/EPVO' fact.
+                                       FLAGSHIP #2, mirroring
+                                       `cloud-itonami-iso3166-lva`'s
+                                       IUB/VDAA check.
+    5. Engagement fee mismatch     -- for `:filing/submit`,
                                        INDEPENDENTLY recompute whether
                                        the engagement's own `:claimed-
                                        fee` equals `base-fee +
@@ -87,10 +107,28 @@
                                        months` -- honest reapplication
                                        of the ground-truth-recompute
                                        discipline sibling actors use.
-    5/6. Double-draft / double-submit prevention -- enforced off
-                                       dedicated `:drafted?`/
-                                       `:submitted?` facts (never a
-                                       `:status` value)."
+    6. IČO unverified              -- for `:filing/submit`, when the
+                                       engagement declares
+                                       `:requires-ico? true`,
+                                       INDEPENDENTLY check
+                                       `:ico-verified?`. Grounded in
+                                       Štatistický úrad SR (Statistical
+                                       Office) -- NOT Finančná správa.
+    7. DIČ unverified              -- for `:filing/submit`, when the
+                                       engagement declares
+                                       `:requires-dic? true`,
+                                       INDEPENDENTLY check
+                                       `:dic-verified?`. Grounded in
+                                       Finančná správa DIČ assignment.
+    8. Confidence floor / actuation
+       gate                          -- LLM confidence below threshold,
+                                       OR the op is `:filing/draft`/
+                                       `:filing/submit` (REAL acts)
+                                       -> escalate.
+
+  Two more guards, double-draft/double-submit prevention, are enforced
+  off dedicated `:drafted?`/`:submitted?` facts (never a `:status`
+  value)."
   (:require [marketentry.facts :as facts]
             [marketentry.registry :as registry]
             [marketentry.store :as store]))
@@ -151,6 +189,39 @@
         [{:rule :fdi-screening-missing
           :detail (str subject " は preverovanie zahraničných investícií (zákon č. 497/2022 Z. z.) を要するが MHSR 承認が未確認 -- 提出提案は進められない")}]))))
 
+(defn- platform-operator-fusion-violations
+  "For `:jurisdiction/assess`, when the jurisdiction has a distinct
+  platform-operator spec-basis on file (`marketentry.facts/
+  platform-operator-spec-basis`), INDEPENDENTLY verify the proposal's
+  own claim keeps the legal/regulatory-oversight authority and the
+  e-procurement platform's separate technical operator DISTINCT.
+  FLAGSHIP #2 -- mirrors `cloud-itonami-iso3166-lva`'s
+  `platform-operator-fusion-violations` (IUB/VDAA), reapplied here to
+  Slovakia's OWN independently-confirmed regulator/operator split: ÚVO
+  (Úrad pre verejné obstarávanie) is the legal/oversight authority; IS
+  EVO/EPVO (isepvo.sk) has been operated by the SEPARATE Úrad vlády
+  Slovenskej republiky since 31 March 2022 -- ÚVO's own site explicitly
+  disclaims operating it. A proposal that collapses them into a single
+  fused authority (the near-universal naive-source mistake for this
+  jurisdiction: 'ÚVO operates IS EVO/EPVO'), or omits one, or cites
+  either against the wrong catalogued value, is a HARD violation."
+  [{:keys [op]} proposal]
+  (when (= op :jurisdiction/assess)
+    (let [value (:value proposal)
+          iso3 (:jurisdiction value)
+          pob (facts/platform-operator-spec-basis iso3)]
+      (when pob
+        (let [legal (:platform-legal-authority value)
+              operator (:platform-technical-operator value)]
+          (when (or (nil? legal)
+                    (nil? operator)
+                    (= legal operator)
+                    (not= legal (:platform-oversight-authority pob))
+                    (not= operator (:platform-operator-authority pob)))
+            [{:rule :platform-operator-fused
+              :detail (str iso3 " のEPVO/IS EVOプラットフォーム運営主体の記載がÚVO(法的監督機関)と実運営者(Úrad vlády SR)を"
+                          "混同しているか、未記載/カタログ値と不一致 -- 別個の主体として検証できない")}]))))))
+
 (defn- engagement-fee-mismatch-violations
   "For `:filing/submit`, INDEPENDENTLY recompute whether the
   engagement's own claimed fee equals base + months x rate."
@@ -161,6 +232,34 @@
         [{:rule :engagement-fee-mismatch
           :detail (str subject " の申告手数料(" (:claimed-fee e)
                       ")が独立再計算値(" (registry/compute-engagement-fee e) ")と一致しない")}]))))
+
+(defn- ico-unverified-violations
+  "For `:filing/submit`, when the engagement declares
+  `:requires-ico? true`, INDEPENDENTLY check `:ico-verified?` --
+  grounded in Štatistický úrad SR (Statistical Office), the body that
+  issues IČO -- a DIFFERENT authority from Finančná správa (which
+  issues DIČ/IČ DPH, see `dic-unverified-violations`). CONDITIONAL on
+  the engagement's own ground truth."
+  [{:keys [op subject]} st]
+  (when (= op :filing/submit)
+    (let [e (store/engagement st subject)]
+      (when (and (true? (:requires-ico? e))
+                 (not (true? (:ico-verified? e))))
+        [{:rule :ico-unverified
+          :detail (str subject " はŠtatistický úrad SR発行のIČO確認を要するが未確認 -- 提出提案は進められない")}]))))
+
+(defn- dic-unverified-violations
+  "For `:filing/submit`, when the engagement declares
+  `:requires-dic? true`, INDEPENDENTLY check `:dic-verified?` --
+  grounded in Finančná správa DIČ assignment. CONDITIONAL on the
+  engagement's own ground truth."
+  [{:keys [op subject]} st]
+  (when (= op :filing/submit)
+    (let [e (store/engagement st subject)]
+      (when (and (true? (:requires-dic? e))
+                 (not (true? (:dic-verified? e))))
+        [{:rule :dic-unverified
+          :detail (str subject " はFinančná správa発行のDIČ確認を要するが未確認 -- 提出提案は進められない")}]))))
 
 (defn- already-drafted-violations
   "For `:filing/draft`, refuses to draft the SAME engagement twice."
@@ -187,7 +286,10 @@
                    (concat (spec-basis-violations request proposal)
                            (evidence-incomplete-violations request st)
                            (fdi-screening-missing-violations request st)
+                           (platform-operator-fusion-violations request proposal)
                            (engagement-fee-mismatch-violations request st)
+                           (ico-unverified-violations request st)
+                           (dic-unverified-violations request st)
                            (already-drafted-violations request st)
                            (already-submitted-violations request st)))
         conf (:confidence proposal 0.0)

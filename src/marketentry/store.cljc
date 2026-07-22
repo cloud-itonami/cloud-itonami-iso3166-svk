@@ -17,11 +17,16 @@
   double-actuation-guard booleans (`:drafted?`/`:submitted?`, never a
   `:status` value).
 
+  `:requires-fdi-screening?`/`:fdi-screening-cleared?` ground the
+  Zákon č. 497/2022 Z. z. FDI-screening check;
+  `:requires-ico?`/`:ico-verified?` ground the Štatistický úrad SR
+  IČO check; `:requires-dic?`/`:dic-verified?` ground the Finančná
+  správa DIČ check -- see `marketentry.governor`.
+
   The ledger stays append-only on every backend."
-  (:require #?(:clj  [clojure.edn :as edn]
-               :cljs [cljs.reader :as edn])
-            [marketentry.registry :as registry]
-            [langchain.db :as d]))
+  (:require [marketentry.registry :as registry]
+            [langchain.db :as d]
+            [langchain-store.core :as ls]))
 
 (defprotocol Store
   (engagement [s id])
@@ -49,24 +54,48 @@
              :base-fee 450000 :monthly-rate 28000 :monitoring-months 12
              :claimed-fee 786000.0
              :requires-fdi-screening? true :fdi-screening-cleared? true
+             :requires-ico? true :ico-verified? true
+             :requires-dic? true :dic-verified? true
              :drafted? false :submitted? false
              :jurisdiction "SVK" :status :intake}
     "eng-2" {:id "eng-2" :operator "Atlantis LLC" :portal "EPVO"
              :base-fee 450000 :monthly-rate 28000 :monitoring-months 12
              :claimed-fee 786000.0
              :requires-fdi-screening? true :fdi-screening-cleared? true
+             :requires-ico? true :ico-verified? true
+             :requires-dic? true :dic-verified? true
              :drafted? false :submitted? false
              :jurisdiction "ATL" :status :intake}
     "eng-3" {:id "eng-3" :operator "Minami Trading Bratislava" :portal "EPVO"
              :base-fee 450000 :monthly-rate 28000 :monitoring-months 12
              :claimed-fee 999000.0
              :requires-fdi-screening? true :fdi-screening-cleared? true
+             :requires-ico? true :ico-verified? true
+             :requires-dic? true :dic-verified? true
              :drafted? false :submitted? false
              :jurisdiction "SVK" :status :intake}
     "eng-4" {:id "eng-4" :operator "Higashi Export" :portal "EPVO"
              :base-fee 450000 :monthly-rate 28000 :monitoring-months 12
              :claimed-fee 786000.0
              :requires-fdi-screening? true :fdi-screening-cleared? false
+             :requires-ico? true :ico-verified? true
+             :requires-dic? true :dic-verified? true
+             :drafted? false :submitted? false
+             :jurisdiction "SVK" :status :intake}
+    "eng-5" {:id "eng-5" :operator "Nishi Logistics" :portal "EPVO"
+             :base-fee 450000 :monthly-rate 28000 :monitoring-months 12
+             :claimed-fee 786000.0
+             :requires-fdi-screening? true :fdi-screening-cleared? true
+             :requires-ico? true :ico-verified? false
+             :requires-dic? true :dic-verified? true
+             :drafted? false :submitted? false
+             :jurisdiction "SVK" :status :intake}
+    "eng-6" {:id "eng-6" :operator "Chuo Civic Tech" :portal "EPVO"
+             :base-fee 400000 :monthly-rate 25000 :monitoring-months 6
+             :claimed-fee 550000.0
+             :requires-fdi-screening? true :fdi-screening-cleared? true
+             :requires-ico? true :ico-verified? true
+             :requires-dic? true :dic-verified? false
              :drafted? false :submitted? false
              :jurisdiction "SVK" :status :intake}}})
 
@@ -157,11 +186,10 @@
    :draft-sequence/jurisdiction     {:db/unique :db.unique/identity}
    :submit-sequence/jurisdiction    {:db/unique :db.unique/identity}})
 
-(defn- enc [v] (pr-str v))
-(defn- dec* [s] (when s (edn/read-string s)))
-
 (defn- engagement->tx [{:keys [id operator portal base-fee monthly-rate monitoring-months claimed-fee
                                requires-fdi-screening? fdi-screening-cleared?
+                               requires-ico? ico-verified?
+                               requires-dic? dic-verified?
                                drafted? submitted?
                                jurisdiction status draft-number submit-number]}]
   (cond-> {:engagement/id id}
@@ -173,6 +201,10 @@
     claimed-fee                           (assoc :engagement/claimed-fee claimed-fee)
     (some? requires-fdi-screening?)     (assoc :engagement/requires-fdi-screening? requires-fdi-screening?)
     (some? fdi-screening-cleared?)      (assoc :engagement/fdi-screening-cleared? fdi-screening-cleared?)
+    (some? requires-ico?)               (assoc :engagement/requires-ico? requires-ico?)
+    (some? ico-verified?)               (assoc :engagement/ico-verified? ico-verified?)
+    (some? requires-dic?)               (assoc :engagement/requires-dic? requires-dic?)
+    (some? dic-verified?)               (assoc :engagement/dic-verified? dic-verified?)
     (some? drafted?)                      (assoc :engagement/drafted? drafted?)
     (some? submitted?)                    (assoc :engagement/submitted? submitted?)
     jurisdiction                          (assoc :engagement/jurisdiction jurisdiction)
@@ -184,6 +216,8 @@
   [:engagement/id :engagement/operator :engagement/portal :engagement/base-fee :engagement/monthly-rate
    :engagement/monitoring-months :engagement/claimed-fee
    :engagement/requires-fdi-screening? :engagement/fdi-screening-cleared?
+   :engagement/requires-ico? :engagement/ico-verified?
+   :engagement/requires-dic? :engagement/dic-verified?
    :engagement/drafted? :engagement/submitted?
    :engagement/jurisdiction :engagement/status :engagement/draft-number :engagement/submit-number])
 
@@ -194,6 +228,10 @@
      :monitoring-months (:engagement/monitoring-months m) :claimed-fee (:engagement/claimed-fee m)
      :requires-fdi-screening? (boolean (:engagement/requires-fdi-screening? m))
      :fdi-screening-cleared? (boolean (:engagement/fdi-screening-cleared? m))
+     :requires-ico? (boolean (:engagement/requires-ico? m))
+     :ico-verified? (boolean (:engagement/ico-verified? m))
+     :requires-dic? (boolean (:engagement/requires-dic? m))
+     :dic-verified? (boolean (:engagement/dic-verified? m))
      :drafted? (boolean (:engagement/drafted? m)) :submitted? (boolean (:engagement/submitted? m))
      :jurisdiction (:engagement/jurisdiction m) :status (:engagement/status m)
      :draft-number (:engagement/draft-number m) :submit-number (:engagement/submit-number m)}))
@@ -207,21 +245,12 @@
          (map #(pull->engagement (d/pull (d/db conn) engagement-pull [:engagement/id %])))
          (sort-by :id)))
   (assessment-of [_ engagement-id]
-    (dec* (d/q '[:find ?p . :in $ ?eid
-                :where [?a :assessment/engagement-id ?eid] [?a :assessment/payload ?p]]
-              (d/db conn) engagement-id)))
-  (ledger [_]
-    (->> (d/q '[:find ?s ?f :where [?e :ledger/seq ?s] [?e :ledger/fact ?f]] (d/db conn))
-         (sort-by first)
-         (mapv (comp dec* second))))
-  (draft-history [_]
-    (->> (d/q '[:find ?s ?r :where [?e :draft-record/seq ?s] [?e :draft-record/record ?r]] (d/db conn))
-         (sort-by first)
-         (mapv (comp dec* second))))
-  (submit-history [_]
-    (->> (d/q '[:find ?s ?r :where [?e :submit-record/seq ?s] [?e :submit-record/record ?r]] (d/db conn))
-         (sort-by first)
-         (mapv (comp dec* second))))
+    (ls/dec* (d/q '[:find ?p . :in $ ?eid
+                   :where [?a :assessment/engagement-id ?eid] [?a :assessment/payload ?p]]
+                 (d/db conn) engagement-id)))
+  (ledger [_] (ls/read-stream conn :ledger/seq :ledger/fact))
+  (draft-history [_] (ls/read-stream conn :draft-record/seq :draft-record/record))
+  (submit-history [_] (ls/read-stream conn :submit-record/seq :submit-record/record))
   (next-draft-sequence [_ jurisdiction]
     (or (d/q '[:find ?n . :in $ ?j
               :where [?e :draft-sequence/jurisdiction ?j] [?e :draft-sequence/next ?n]]
@@ -242,7 +271,7 @@
       (d/transact! conn [(engagement->tx value)])
 
       :assessment/set
-      (d/transact! conn [{:assessment/engagement-id (first path) :assessment/payload (enc payload)}])
+      (d/transact! conn [{:assessment/engagement-id (first path) :assessment/payload (ls/enc payload)}])
 
       :engagement/mark-drafted
       (let [engagement-id (first path)
@@ -252,7 +281,7 @@
         (d/transact! conn
                      [(engagement->tx (assoc engagement-patch :id engagement-id))
                       {:draft-sequence/jurisdiction jurisdiction :draft-sequence/next next-n}
-                      {:draft-record/seq (count (draft-history s)) :draft-record/record (enc (get result "record"))}])
+                      {:draft-record/seq (count (draft-history s)) :draft-record/record (ls/enc (get result "record"))}])
         result)
 
       :engagement/mark-submitted
@@ -263,12 +292,12 @@
         (d/transact! conn
                      [(engagement->tx (assoc engagement-patch :id engagement-id))
                       {:submit-sequence/jurisdiction jurisdiction :submit-sequence/next next-n}
-                      {:submit-record/seq (count (submit-history s)) :submit-record/record (enc (get result "record"))}])
+                      {:submit-record/seq (count (submit-history s)) :submit-record/record (ls/enc (get result "record"))}])
         result)
       nil)
     s)
   (append-ledger! [s fact]
-    (d/transact! conn [{:ledger/seq (count (ledger s)) :ledger/fact (enc fact)}])
+    (ls/append-blob! conn :ledger/seq :ledger/fact (count (ledger s)) fact)
     fact)
   (with-engagements [s engagements]
     (when (seq engagements) (d/transact! conn (mapv engagement->tx (vals engagements)))) s))

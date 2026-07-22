@@ -89,6 +89,53 @@
       (is (some #{:engagement-fee-mismatch} (-> (store/ledger db) last :basis)))
       (is (empty? (store/submit-history db))))))
 
+;; ---- the central fabrication trap for this jurisdiction: ÚVO vs Úrad vlády SR ----
+
+(deftest clean-assess-correctly-distinguishes-uvo-from-urad-vlady-sr
+  (testing "a clean jurisdiction/assess proposal keeps ÚVO (legal-oversight authority) and Úrad vlády SR (IS EVO/EPVO's operator) separate -- settles as normal escalate/approve/commit, no fusion hold"
+    (let [[db actor] (fresh)
+          res (exec-op actor "t7" {:op :jurisdiction/assess :subject "eng-1"} operator)]
+      (is (= :interrupted (:status res)) "still escalates for human approval, same as any assess")
+      (let [r2 (approve! actor "t7")
+            assessment (store/assessment-of db "eng-1")]
+        (is (= :commit (get-in r2 [:state :disposition])))
+        (is (re-find #"ÚVO" (:platform-legal-authority assessment)))
+        (is (re-find #"Úrad vlády" (:platform-technical-operator assessment)))
+        (is (not= (:platform-legal-authority assessment) (:platform-technical-operator assessment)))))))
+
+(deftest fused-platform-authority-claim-is-held-and-unoverridable
+  (testing "a jurisdiction/assess proposal that fuses ÚVO and Úrad vlády SR into one authority ('ÚVO operates IS EVO/EPVO') -> HARD hold, settles immediately, no interrupt"
+    (let [[db actor] (fresh)
+          res (exec-op actor "t7b" {:op :jurisdiction/assess :subject "eng-1" :fuse-platform-operator? true} operator)]
+      (is (= :hold (get-in res [:state :disposition])) "settles immediately, no interrupt")
+      (is (not= :interrupted (:status res)))
+      (is (some #{:platform-operator-fused} (-> (store/ledger db) first :basis)))
+      (is (nil? (store/assessment-of db "eng-1")) "no fused assessment written -- HARD violations never commit"))))
+
+;; ---- the other fabrication trap for this jurisdiction: IČO vs DIČ ----
+
+(deftest ico-unverified-is-held-and-unoverridable
+  (testing "missing Štatistický úrad SR IČO verification -> HARD hold"
+    (let [[db actor] (fresh)
+          _ (assess! actor "t7cpre" "eng-5")
+          _ (draft! actor "t7cpre" "eng-5")
+          res (exec-op actor "t7c" {:op :filing/submit :subject "eng-5"} operator)]
+      (is (= :hold (get-in res [:state :disposition])) "settles immediately, no interrupt")
+      (is (not= :interrupted (:status res)))
+      (is (some #{:ico-unverified} (-> (store/ledger db) last :basis)))
+      (is (empty? (store/submit-history db))))))
+
+(deftest dic-unverified-is-held-and-unoverridable
+  (testing "missing Finančná správa DIČ verification -> HARD hold"
+    (let [[db actor] (fresh)
+          _ (assess! actor "t7dpre" "eng-6")
+          _ (draft! actor "t7dpre" "eng-6")
+          res (exec-op actor "t7d" {:op :filing/submit :subject "eng-6"} operator)]
+      (is (= :hold (get-in res [:state :disposition])) "settles immediately, no interrupt")
+      (is (not= :interrupted (:status res)))
+      (is (some #{:dic-unverified} (-> (store/ledger db) last :basis)))
+      (is (empty? (store/submit-history db))))))
+
 (deftest submit-always-escalates-then-human-decides
   (testing "a clean fully-assessed submit still ALWAYS interrupts for human approval"
     (let [[db actor] (fresh)
@@ -137,10 +184,37 @@
       (is (= 1 (count (store/submit-history db))) "still only the one earlier submit"))))
 
 (deftest every-decision-leaves-one-ledger-fact
-  (testing "write-only-through-ledger: N operations -> N ledger facts"
+  (testing "write-only-through-ledger: N operations -> N ledger facts (append-only, never rewritten)"
     (let [[db actor] (fresh)]
       (exec-op actor "a" {:op :engagement/intake :subject "eng-1"
                           :patch {:id "eng-1" :operator "Kita Systems SVK"}} operator)
       (exec-op actor "b" {:op :jurisdiction/assess :subject "eng-1" :no-spec? true} operator)
-      (is (= 2 (count (store/ledger db)))
-          "one commit + one hold, both recorded"))))
+      (exec-op actor "c" {:op :jurisdiction/assess :subject "eng-1" :fuse-platform-operator? true} operator)
+      (is (= 3 (count (store/ledger db)))
+          "one commit + two holds, all recorded, none overwritten")
+      (is (every? #(contains? #{:commit :hold} (:disposition %)) (store/ledger db))))))
+
+(deftest ledger-is-append-only
+  (testing "the same engine used across N runs never shrinks or rewrites the ledger, only grows it"
+    (let [[db actor] (fresh)
+          before (store/ledger db)]
+      (is (empty? before))
+      (exec-op actor "x1" {:op :engagement/intake :subject "eng-1" :patch {:id "eng-1"}} operator)
+      (let [after-1 (store/ledger db)]
+        (is (= 1 (count after-1)))
+        (is (= before (take (count before) after-1)) "prior facts untouched")
+        (exec-op actor "x2" {:op :jurisdiction/assess :subject "eng-1" :no-spec? true} operator)
+        (let [after-2 (store/ledger db)]
+          (is (= 2 (count after-2)))
+          (is (= after-1 (take (count after-1) after-2)) "earlier facts still present, unchanged, in order"))))))
+
+(deftest interrupt-before-request-approval-pauses-the-actor
+  (testing "the compiled graph's interrupt-before boundary actually pauses execution -- no record/ledger write happens until resume"
+    (let [[db actor] (fresh)
+          r1 (exec-op actor "t14" {:op :jurisdiction/assess :subject "eng-1"} operator)]
+      (is (= :interrupted (:status r1)))
+      (is (nil? (store/assessment-of db "eng-1")) "nothing committed while paused")
+      (is (empty? (store/ledger db)) "no ledger fact written until the human decides")
+      (approve! actor "t14")
+      (is (some? (store/assessment-of db "eng-1")) "commits only after resume")
+      (is (= 1 (count (store/ledger db)))))))
