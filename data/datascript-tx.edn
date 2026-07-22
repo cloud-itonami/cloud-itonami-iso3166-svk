@@ -1,0 +1,33 @@
+;; data/datascript-tx.edn — DataScript tx-data derived from src/statute/facts.cljc
+;; `statute.facts/catalog` (ADR-2607141700 Wave 0). Same shape as sibling files.
+
+[#:statute{:id "svk.zb-1991-513-obchodny-zakonnik"
+           :title "Obchodný zákonník (Commercial Code)"
+           :jurisdiction "SVK"
+           :kind :law
+           :law-number "513/1991 Zb."
+           :url "https://www.slov-lex.sk/pravne-predpisy/SK/ZZ/1991/513/"
+           :url-provenance :official-slov-lex-sk
+           :enacted-date "1992-01-01"
+           :retrieved-at "2026-07-23"
+           :topic [:corporate-governance :incorporation]}
+ #:statute{:id "svk.zz-2018-18-ochrana-osobnych-udajov"
+           :title "Zákon o ochrane osobných údajov (Personal Data Protection Act)"
+           :jurisdiction "SVK"
+           :kind :law
+           :law-number "18/2018 Z. z."
+           :url "https://www.slov-lex.sk/pravne-predpisy/SK/ZZ/2018/18/"
+           :url-provenance :official-slov-lex-sk
+           :enacted-date "2018-05-25"
+           :retrieved-at "2026-07-23"
+           :topic [:data-protection :privacy]}
+ #:statute{:id "svk.zz-2001-311-zakonnik-prace"
+           :title "Zákonník práce (Labour Code)"
+           :jurisdiction "SVK"
+           :kind :law
+           :law-number "311/2001 Z. z."
+           :url "https://www.slov-lex.sk/pravne-predpisy/SK/ZZ/2001/311/"
+           :url-provenance :official-slov-lex-sk
+           :enacted-date "2002-04-01"
+           :retrieved-at "2026-07-23"
+           :topic [:labor :employment]}]

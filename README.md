@@ -1,6 +1,43 @@
 # cloud-itonami-iso3166-svk
 
-Open ISO 3166 Blueprint for **SVK**: Slovakia.
+Open ISO 3166 Blueprint for **SVK**: Slovak Republic (EU member state).
+
+**`:implemented`** for **SVK**. Flagship `fdi-screening-missing`
+(Zákon č. 497/2022 Z. z. o preverovaní zahraničných investícií).
+
+```
+clojure -M:dev:test
+```
+
+## Official surface (web-verified)
+
+- Procurement: Úrad pre verejné obstarávanie (ÚVO, uvo.gov.sk) administers
+  Zákon č. 343/2015 Z. z. o verejnom obstarávaní and the "Zoznam
+  hospodárskych subjektov" (List of Economic Operators, § 187 ods. 7).
+  The actual e-procurement platform, EPVO (isepvo.sk: IS EVO +
+  Elektronické trhovisko), is administered separately -- by the Úrad
+  podpredsedu vlády SR pre Plán obnovy a znalostnú ekonomiku, not by
+  ÚVO itself (ÚVO retains supervisory/appeals authority). This
+  institutional split is genuine and disclosed, not an omission.
+- Business/tax: Obchodný register (orsr.sk), administered by the
+  Ministerstvo spravodlivosti SR (Ministry of Justice) via regional
+  registry courts, under Zákon č. 530/2003 Z. z. o obchodnom registri.
+  Finančná správa administers IČ DPH registration (Zákon č. 222/2004
+  Z. z., mandatory once turnover exceeds 50 000 EUR/62 500 EUR) and
+  general tax registration (Daňový poriadok, Zákon č. 563/2009 Z. z.).
+- Foreign investment: Slovakia, as an EU member state, implements EU
+  Regulation 2019/452's inbound-FDI-screening mechanism via Zákon č.
+  497/2022 Z. z. o preverovaní zahraničných investícií (effective
+  1. 3. 2023), administered by Ministerstvo hospodárstva SR (MHSR).
+  Screened sectors ("kritické zahraničné investície") are fixed by
+  nariadenie vlády SR č. 61/2023 Z. z. This is a GENUINELY DIFFERENT
+  regulatory axis from Poland's EU-establishment/NIP checks -- an
+  inbound-investment security/public-order gate, not a market-access-
+  documentation gate -- and is this vertical's flagship governor check.
+
+See `src/marketentry/facts.cljc` and `src/statute/facts.cljc` for the
+full citation trail (including one disclosed gap: this session did not
+independently pull the specific DIČ tax-ID-assignment article number).
 
 This repository designs a forkable OSS business for an independent
 public-sector market-entry consultant: an already-incorporated operator
