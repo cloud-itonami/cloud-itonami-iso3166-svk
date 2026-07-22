@@ -1,8 +1,10 @@
 (ns marketentry.sim
   "Demo driver -- `clojure -M:dev:run`. Walks a clean engagement
-  through intake -> jurisdiction assessment -> filing draft
-  (escalate/approve/commit) -> filing submit (escalate/approve/
-  commit), then shows HARD-hold scenarios."
+  through intake -> jurisdiction assessment (ÚVO/EPVO platform-operator
+  claim correctly distinguishes ÚVO from Úrad vlády SR) -> filing
+  draft (escalate/approve/commit) -> filing submit (escalate/approve/
+  commit), then shows HARD-hold scenarios, including the
+  platform-operator-fusion and IČO/DIČ flagship checks."
   (:require [langgraph.graph :as g]
             [marketentry.store :as store]
             [marketentry.operation :as op]))
@@ -41,6 +43,9 @@
     (println "== jurisdiction/assess eng-2 (no spec-basis -> HARD hold) ==")
     (println (exec-op actor "t5" {:op :jurisdiction/assess :subject "eng-2" :no-spec? true} operator))
 
+    (println "== jurisdiction/assess eng-1-again (fuse-platform-operator? -> HARD hold, flagship #2: ÚVO/Úrad vlády SR) ==")
+    (println (exec-op actor "t5b" {:op :jurisdiction/assess :subject "eng-1" :fuse-platform-operator? true} operator))
+
     (println "== jurisdiction/assess eng-3 (sets up fee-mismatch) ==")
     (println (exec-op actor "t6" {:op :jurisdiction/assess :subject "eng-3"} operator))
     (println (approve! actor "t6"))
@@ -56,6 +61,22 @@
     (println (approve! actor "t8b"))
     (println "== filing/submit eng-4 (fdi-screening-missing -> HARD hold) ==")
     (println (exec-op actor "t9" {:op :filing/submit :subject "eng-4"} operator))
+
+    (println "== jurisdiction/assess eng-5 (sets up ico-unverified) ==")
+    (println (exec-op actor "t9c" {:op :jurisdiction/assess :subject "eng-5"} operator))
+    (println (approve! actor "t9c"))
+    (println (exec-op actor "t9d" {:op :filing/draft :subject "eng-5"} operator))
+    (println (approve! actor "t9d"))
+    (println "== filing/submit eng-5 (ico-unverified -> HARD hold) ==")
+    (println (exec-op actor "t9e" {:op :filing/submit :subject "eng-5"} operator))
+
+    (println "== jurisdiction/assess eng-6 (sets up dic-unverified) ==")
+    (println (exec-op actor "t9f" {:op :jurisdiction/assess :subject "eng-6"} operator))
+    (println (approve! actor "t9f"))
+    (println (exec-op actor "t9g" {:op :filing/draft :subject "eng-6"} operator))
+    (println (approve! actor "t9g"))
+    (println "== filing/submit eng-6 (dic-unverified -> HARD hold) ==")
+    (println (exec-op actor "t9h" {:op :filing/submit :subject "eng-6"} operator))
 
     (println "== filing/draft eng-1 AGAIN (double-draft -> HARD hold) ==")
     (println (exec-op actor "t10" {:op :filing/draft :subject "eng-1"} operator))
