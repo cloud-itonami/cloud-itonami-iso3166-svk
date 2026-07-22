@@ -21,13 +21,31 @@
 
 ## Offer
 
-- registration walkthrough for the Slovak Office for Public
-  Procurement's List of Economic Operators (Zoznam hospodárskych
-  subjektov), a prerequisite registration that relieves bidders from
-  submitting individual selection-criteria documents on every tender
-- business/tax registration checklist: an entry in the Obchodný register
-  (Business Register, orsr.sk), administered by the Ministry of Justice
-  and kept electronically by registry courts since 2004
+- registration walkthrough for the Úrad pre verejné obstarávanie's
+  (ÚVO, Public Procurement Office) "Zoznam hospodárskych subjektov"
+  (List of Economic Operators) -- ÚVO's own site describes this as an
+  information system recording which economic operators have
+  demonstrated eligibility to enter into public-procurement contracts
+  or framework agreements (§ 187 ods. 7 zákona o verejnom obstarávaní)
+  -- plus the actual EPVO (Elektronická platforma verejného
+  obstarávania, isepvo.sk) economic-operator registration in IS EVO
+  and/or Elektronické trhovisko, the two systems that carry out
+  tendering itself (administered separately from ÚVO, by the Úrad
+  podpredsedu vlády SR pre Plán obnovy a znalostnú ekonomiku)
+- business/tax registration checklist: an entry in the Obchodný
+  register (Business Register, orsr.sk), administered by the
+  Ministerstvo spravodlivosti SR (Ministry of Justice) and kept by
+  regional registry courts (registrové súdy); IČ DPH registration with
+  Finančná správa once turnover exceeds the Zákon o DPH thresholds
+  (50 000 EUR / 62 500 EUR)
+- FOREIGN-INVESTMENT-SCREENING navigation: for engagements the
+  government has designated "kritické zahraničné investície" (critical
+  foreign investments, nariadenie vlády SR č. 61/2023 Z. z.), guiding
+  the client through Ministerstvo hospodárstva SR's (MHSR) screening
+  process under Zákon č. 497/2022 Z. z. (implementing EU Regulation
+  2019/452) BEFORE any filing submission -- this is the genuinely
+  EU-member-state-specific regulatory axis this blueprint's governor
+  independently gates on (see GOVERNANCE.md / `marketentry.governor`)
 - local-content / preferential-procurement navigation: EU-wide open
   tendering above EU thresholds (no national-content quota as an EU
   member state), but Slovak-language submission is typically required
@@ -46,6 +64,11 @@
 - any actual portal registration or filing submission requires
   Market-Entry Compliance Governor clearance and always escalates to
   human sign-off (`:filing/submit` is never automated at any phase)
+- an engagement flagged as a "kritická zahraničná investícia" (critical
+  foreign investment) that has NOT cleared Ministerstvo hospodárstva SR's
+  (MHSR) screening under Zákon č. 497/2022 Z. z. is a HARD hold on
+  `:filing/submit` that cannot be overridden by human approval alone --
+  the governor's flagship check for this vertical
 - a false or fabricated regulatory-requirement claim is a HARD hold that
   cannot be overridden by human approval alone — it must be corrected
   against a cited official source first
