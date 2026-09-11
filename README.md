@@ -38,7 +38,7 @@ clojure -M:dev:run     # walk a demo engagement through the full actor graph
   inbound-investment security/public-order gate, not a market-access-
   documentation gate -- and is this vertical's flagship governor check.
 
-See `src/marketentry/facts.cljc` and `src/statute/facts.cljc` for the
+See `src/marketentry/facts.cljk` and `src/statute/facts.cljk` for the
 full citation trail (including one disclosed gap: this session did not
 independently pull the specific DIČ tax-ID-assignment article number).
 
@@ -140,7 +140,7 @@ have independently confirmed `:fdi-screening-cleared? true` before
 `:filing/submit` -- grounded in Zákon č. 497/2022 Z. z. o preverovaní
 zahraničných investícií (effective 1. 3. 2023, implementing EU
 Regulation 2019/452), administered by Ministerstvo hospodárstva SR.
-See `test/marketentry/governor_contract_test.clj`'s
+See `test/marketentry/governor_contract_test.cljk`'s
 `fdi-screening-missing-is-held-and-unoverridable`.
 
 ### Flagship check #2: ÚVO is not Úrad vlády SR
@@ -231,7 +231,7 @@ Alongside the market-entry / statute catalogs, this repo carries a
 `com-junkawasaki/root`) — national dishes, protected products, beverages,
 crafts, festivals and heritage sites for Slovakia:
 
-- `src/culture/facts.cljc` — the catalog, source of truth (keyed by
+- `src/culture/facts.cljk` — the catalog, source of truth (keyed by
   uppercase ISO3, mirroring `statute.facts`).
 - `schema/culture.edn` — DataScript schema.
 - `data/culture-tx.edn` — derived DataScript tx-data (regenerated from
