@@ -8,8 +8,8 @@ zahraničných investícií) and `platform-operator-fused` (ÚVO vs. Úrad
 vlády SR -- see below).
 
 ```
-clojure -M:dev:test    # governor contract + facts + phase + registry + store + statute + culture
-clojure -M:dev:run     # walk a demo engagement through the full actor graph
+kbb -M:dev:test    # governor contract + facts + phase + registry + store + statute + culture
+kbb -M:dev:run     # walk a demo engagement through the full actor graph
 ```
 
 ## Official surface (web-verified)
